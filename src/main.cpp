@@ -4,7 +4,7 @@
 
 // Object decleration 
 Position* bp = new Position((float)13.505854,(float)2.126682);
-Bike* bike = new Bike((unsigned)12, *bp, 0, 0);
+Bike* bike = new Bike((unsigned)1, *bp, 0, 0);
 
 // Led pin decleration
 int ledLockState = 2;
