@@ -2,11 +2,13 @@
 #include <Arduino.h>
 
 Packet::Packet(unsigned int bikeid, float lat, float lon, bool unlockable, bool locked){
+
     this->bikeID = bikeid;
     this->latitude = lat;
     this->longitude = lon;
     this->unlockable = unlockable;
     this->locked = locked;
+    
 }
 
 Packet::~Packet()

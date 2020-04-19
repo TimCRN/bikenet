@@ -1,31 +1,49 @@
 #include "Packet.h"
+#include "Bike.h"
 #include <Arduino.h>
 
-void setup() {
+// Object decleration 
+Position* bp = new Position((float)12445.1266654,(float)154662.156442);
+Bike* bike = new Bike((unsigned)12, *bp, 1, 1);
 
-  Serial.begin(9600);  
+// Led pin decleration
+int ledLockState = 2;
+int ledUnlockable = 3;
+int buttonLock = 4;
 
+// Time buffer variable for lock and unlock
+unsigned long lockBuffer = 0;
+
+void setup() 
+{
+  pinMode(ledLockState, OUTPUT);
+  pinMode(ledUnlockable, OUTPUT);
+  pinMode(buttonLock, INPUT);
+
+  bike->SetUnlockTime();
+
+  Serial.begin(9600);   
 }
 
-void update() {
-  
-   Packet* j = nullptr;
-  // byte* b = nullptr;
+void update() {   
 
   // Compose Packet
-  j = new Packet(1, 1442.0221, 6413.024, 0, 1);
-  
-  // Turn Packet into Byte Array
-  // b = j->toByte();
+  // Packet* p = nullptr;
+  Packet p(
+    bike->GetID(), 
+    (bike->GetPosition()).latitude, 
+    (bike->GetPosition()).longitude,
+    bike->GetUnlockable(),
+    bike->GetLockState()
+    );
 
   // Write the Byte Array
   for(int i = 0; i < 18; i++) {
-    Serial.write(j->toByte()[i]);
+    Serial.write(p.toByte()[i]);
   }
 
-  // Delete Pointers
-  delete j; 
-  // delete b;   
+  // Delete Packet Pointer
+  // delete p;  
 
 }
 
@@ -35,36 +53,76 @@ void listen() {
   command = Serial.read();
 
   switch((int)command){
-    case 1:
-    // Some shit
-        
-      break;
-    case 2:
-    // Some other fucking shit
 
-      break;
-    case 3:
-    // Shit that makes you want to kill yourself
+    case 1: // Make bike unlockable
 
-      break;      
-    default:
-    // Big fucking niggers, you asshole
-      Serial.println("banaan");
+      update();
+      break;
+
+    case 2: // Request Packet
+
+      bike->SetUnlockable(true);
+      bike->SetUnlockTime();        
+      break;    
+
+    default: // Undefined commands
+
+      Serial.print("Command ");
+      Serial.print("'");
+      Serial.print(command);
+      Serial.print("'");
+      Serial.println(" not defined!");
 
       break;
   }
 
 }
 
-void loop() {
-  
-  if(Serial.available() > 0){
-    listen();
+void ledUpdate() {
+
+  if(bike->GetUnlockable() && digitalRead(ledUnlockable) != HIGH) {
+    digitalWrite(ledUnlockable, HIGH);
   }
-  else {
-    update();
+  else if(!bike->GetUnlockable() && digitalRead(ledUnlockable) != LOW) {
+    digitalWrite(ledUnlockable, LOW);
   }
 
-  delay(5000);
+  if(bike->GetLockState() && digitalRead(ledLockState) != HIGH) {
+    digitalWrite(ledLockState, HIGH);
+  }
+  else if(!bike->GetLockState() && digitalRead(ledLockState) != LOW) {
+    digitalWrite(ledLockState, LOW);
+  }
+
+}
+
+void lockLogicUpdate(){
+
+  if(bike->GetUnlockable() && (millis() - bike->GetUnlockTime()) >= 10000) {
+    bike->SetUnlockable(false);
+  }
+
+  if(digitalRead(buttonLock) == HIGH && bike->GetUnlockable()) {
+    bike->SetLockState(false);
+    bike->SetUnlockable(false);
+    lockBuffer = millis();
+  }
+  else if (digitalRead(buttonLock) == HIGH && !bike->GetUnlockable() &&  millis() - lockBuffer >= 2000 ) {
+    bike->SetLockState(true);
+    lockBuffer = 0;
+  }  
+
+}
+
+void loop() {
+
+  lockLogicUpdate();
+  ledUpdate();  
+
+  if(Serial.available() > 0){
+    listen();
+  }  
+
+  delay(3);
     
 }
