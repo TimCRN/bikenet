@@ -10,13 +10,15 @@ struct Packet {
 
     unsigned int bikeID;
 
+    byte ar[18];
+
     float latitude;
     float longitude;
 
     bool unlockable;
     bool locked;
 
-    byte* toByte();
+    void toByte();   
 
 };
 

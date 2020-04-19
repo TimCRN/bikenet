@@ -8,15 +8,17 @@ Packet::Packet(unsigned int bikeid, float lat, float lon, bool unlockable, bool 
     this->longitude = lon;
     this->unlockable = unlockable;
     this->locked = locked;
+
+    this->toByte();
     
 }
 
 Packet::~Packet()
 {
-    
+
 }
 
-byte* Packet::toByte(){
+void Packet::toByte(){
     
     union {
         float val;
@@ -26,27 +28,23 @@ byte* Packet::toByte(){
     lat.val = latitude;
     lon.val = longitude;
 
-    static byte ar[18] =
-    {
-        0x00,
-        (byte)((bikeID >> 8) & 0xff),
-        (byte)(bikeID & 0xff),
-        0x01,
-        lat.ar[0],
-        lat.ar[1],
-        lat.ar[2],
-        lat.ar[3],
-        0x02,
-        lon.ar[0],
-        lon.ar[1],
-        lon.ar[2],
-        lon.ar[3],
-        0x03,
-        (byte)(unlockable & 0xff),
-        0x04,
-        (byte)(locked & 0xff),
-        0x0A
-    };
+    ar[0] = 0x00;
+    ar[1] = (byte)((bikeID >> 8) & 0xff);
+    ar[2] = (byte)(bikeID & 0xff);
+    ar[3] = 0x01;
+    ar[4] = lat.ar[0];
+    ar[5] = lat.ar[1];
+    ar[6] = lat.ar[2];
+    ar[7] = lat.ar[3];
+    ar[8] = 0x02;
+    ar[9] = lon.ar[0];
+    ar[10] = lon.ar[1];
+    ar[11] = lon.ar[2];
+    ar[12] = lon.ar[3];
+    ar[13] = 0x03;
+    ar[14] = (byte)(unlockable & 0xff);
+    ar[15] = 0x04;
+    ar[16] = (byte)(locked & 0xff);
+    ar[17] = 0x0A;
 
-    return ar;
 }

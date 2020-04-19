@@ -3,8 +3,8 @@
 #include <Arduino.h>
 
 // Object decleration 
-Position* bp = new Position((float)12445.1266654,(float)154662.156442);
-Bike* bike = new Bike((unsigned)12, *bp, 1, 1);
+Position* bp = new Position((float)13.505854,(float)2.126682);
+Bike* bike = new Bike((unsigned)12, *bp, 0, 0);
 
 // Led pin decleration
 int ledLockState = 2;
@@ -28,8 +28,8 @@ void setup()
 void update() {   
 
   // Compose Packet
-  // Packet* p = nullptr;
-  Packet p(
+  Packet* p = nullptr;
+  p = new Packet(
     bike->GetID(), 
     (bike->GetPosition()).latitude, 
     (bike->GetPosition()).longitude,
@@ -39,11 +39,11 @@ void update() {
 
   // Write the Byte Array
   for(int i = 0; i < 18; i++) {
-    Serial.write(p.toByte()[i]);
+    Serial.write(p->ar[i]);
   }
 
   // Delete Packet Pointer
-  // delete p;  
+  delete p;  
 
 }
 
@@ -54,12 +54,12 @@ void listen() {
 
   switch((int)command){
 
-    case 1: // Make bike unlockable
+    case 1: // Request Packet
 
       update();
       break;
 
-    case 2: // Request Packet
+    case 2: // Make bike unlockable
 
       bike->SetUnlockable(true);
       bike->SetUnlockTime();        
